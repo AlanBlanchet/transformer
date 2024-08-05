@@ -3,17 +3,17 @@
 @when : 2019-10-25
 @homepage : https://github.com/gusdnd852
 """
+
 from torch import nn
 
 from models.layers.scale_dot_product_attention import ScaleDotProductAttention
 
 
 class MultiHeadAttention(nn.Module):
-
-    def __init__(self, d_model, n_head):
+    def __init__(self, d_model, n_head, use_softmax):
         super(MultiHeadAttention, self).__init__()
         self.n_head = n_head
-        self.attention = ScaleDotProductAttention()
+        self.attention = ScaleDotProductAttention(use_softmax=use_softmax)
         self.w_q = nn.Linear(d_model, d_model)
         self.w_k = nn.Linear(d_model, d_model)
         self.w_v = nn.Linear(d_model, d_model)

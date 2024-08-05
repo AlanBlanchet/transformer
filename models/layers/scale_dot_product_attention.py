@@ -3,6 +3,7 @@
 @when : 2019-10-22
 @homepage : https://github.com/gusdnd852
 """
+
 import math
 
 from torch import nn
@@ -17,9 +18,10 @@ class ScaleDotProductAttention(nn.Module):
     Value : every sentence same with Key (encoder)
     """
 
-    def __init__(self):
+    def __init__(self, use_softmax):
         super(ScaleDotProductAttention, self).__init__()
         self.softmax = nn.Softmax(dim=-1)
+        self.use_softmax = use_softmax
 
     def forward(self, q, k, v, mask=None, e=1e-12):
         # input is 4 dimension tensor
@@ -31,13 +33,16 @@ class ScaleDotProductAttention(nn.Module):
         score = (q @ k_t) / math.sqrt(d_tensor)  # scaled dot product
 
         # 2. apply masking (opt)
+        fill_values = 0 if self.use_softmax else -10000
         if mask is not None:
-            score = score.masked_fill(mask == 0, -10000)
+            score = score.masked_fill(mask == 0, fill_values)
 
-        # 3. pass them softmax to make [0, 1] range
-        score = self.softmax(score)
+        out = score
+        if self.use_softmax:
+            # 3. pass them softmax to make [0, 1] range
+            score = self.softmax(score)
 
-        # 4. multiply with Value
-        v = score @ v
+            # 4. multiply with Value
+            out = score @ v
 
-        return v, score
+        return out, score
